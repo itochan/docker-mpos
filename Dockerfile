@@ -1,23 +1,18 @@
-FROM php:7.2-fpm-alpine
-
-# docker-entrypoint.sh dependencies
-RUN apk add --no-cache \
-# in theory, docker-entrypoint.sh is POSIX-compliant, but priority is a working, consistent image
-		bash \
-# BusyBox sed is not sufficient for some of our sed expressions
-		sed
+FROM php:7.2-apache
 
 # install the PHP extensions we need
 RUN set -ex; \
 	\
-	apk add --no-cache --virtual .build-deps \
-		autoconf \
+	apt-get update; \
+	apt-get install -y \
+		zlib1g-dev \
+		libmemcached-dev \
 	; \
+	rm -rf /var/lib/apt/lists/*; \
 	\
-	docker-php-ext-install opcache; \
+	docker-php-ext-install mysqli opcache; \
 	pecl install memcached-3.0.4 && \
-	docker-php-ext-enable memcached; \
-	apk del .build-deps
+	docker-php-ext-enable memcached
 
 # set recommended PHP.ini settings
 # see https://secure.php.net/manual/en/opcache.installation.php
@@ -31,6 +26,11 @@ RUN { \
 	} > /usr/local/etc/php/conf.d/opcache-recommended.ini
 
 VOLUME /var/www/html
+
+ENV APACHE_DOCUMENT_ROOT /var/www/html/public
+
+RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf
+RUN sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
 
 ENV MPOS_VERSION 1.0.8
 ENV MPOS_SHA1 994fd4733ce2f8e93816ff384e21c2a1773b8552
@@ -49,4 +49,4 @@ ADD global.inc.php /var/www/html/include/config/global.inc.php
 COPY docker-entrypoint.sh /usr/local/bin/
 
 ENTRYPOINT ["docker-entrypoint.sh"]
-CMD ["php-fpm"]
+CMD ["apache2-foreground"]
