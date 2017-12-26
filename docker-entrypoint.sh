@@ -10,4 +10,6 @@ if ! [ -e index.php ]; then
   echo >&2 "Complete! MPOS has been successfully copied to $PWD"
 fi
 
+echo "display_errors = ${DISPLAY_ERRORS:Off}" >> /usr/local/etc/php/conf.d/environment.ini
+
 exec "$@"
