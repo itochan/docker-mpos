@@ -46,5 +46,7 @@ RUN set -ex; \
 
 COPY docker-entrypoint.sh /usr/local/bin/
 
+EXPOSE 80
+
 ENTRYPOINT ["docker-entrypoint.sh"]
 CMD ["apache2-foreground"]
