@@ -44,8 +44,6 @@ RUN set -ex; \
 	mv "/usr/src/php-mpos-${MPOS_VERSION}" /usr/src/mpos; \
 	chown -R www-data:www-data /usr/src/mpos
 
-ADD global.inc.php /var/www/html/include/config/global.inc.php
-
 COPY docker-entrypoint.sh /usr/local/bin/
 
 ENTRYPOINT ["docker-entrypoint.sh"]
